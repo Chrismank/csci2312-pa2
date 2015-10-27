@@ -1,18 +1,24 @@
 //
 //  Cluster.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 //  PA3
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA3
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 //  PA2
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA2
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 
 #include "Cluster.hpp"
 #include "Point.hpp"
@@ -20,16 +26,20 @@
 #include <iostream>
 #include <iomanip>
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <fstream>
 #include <string>
 #include <sstream>
 
 =======
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 using namespace std;
 
 namespace Clustering
 {
+<<<<<<< HEAD
 <<<<<<< HEAD
   
     unsigned int Cluster::_idGenerator = 1;
@@ -41,6 +51,8 @@ namespace Clustering
     {
         LNodePtr travelPtr, prevNode = nullptr;
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     Cluster::Cluster() // Default Constructor
     {
         size = 0; // size of our cluster initialized to 0
@@ -83,12 +95,16 @@ namespace Clustering
     Cluster::~Cluster()
     {
         LNodePtr travelPtr, smallerNode = nullptr;
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         travelPtr = points;
         
         while(travelPtr != nullptr)
         {
+<<<<<<< HEAD
 <<<<<<< HEAD
             prevNode = travelPtr; // set prev node up to equal our travelptr
             travelPtr = travelPtr->next; // set travelptr equal to the next node in the list
@@ -99,6 +115,11 @@ namespace Clustering
             delete smallerNode;
             travelPtr = travelPtr->next;
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+            smallerNode = travelPtr;
+            delete smallerNode;
+            travelPtr = travelPtr->next;
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         }
     }
     
@@ -156,11 +177,17 @@ namespace Clustering
         LNodePtr travelPtr; // Used to travel down the linked list in search of the last node
         LNodePtr smallerNode = nullptr; // Points to the node in our list holding a smaller value than our new node, which allows us to insert the new node in between here and the next node
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     
  
         ++ size; // Adds 1 to the size of the cluster
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+    
+ 
+        ++ size; // Adds 1 to the size of the cluster
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         // Here is where we will make a new node and store the pointer to our point value in it. The pointptr is represented by member variable p
         
@@ -207,9 +234,12 @@ namespace Clustering
         }
     
 <<<<<<< HEAD
+<<<<<<< HEAD
         size++; // Adds 1 to the size of the cluster
 =======
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     }
     
     
@@ -306,12 +336,16 @@ namespace Clustering
             travelPtrL = lhs.points; // sets up our travel pointer to start at the head of the lhs cluster
             
 <<<<<<< HEAD
+<<<<<<< HEAD
             unsigned dimensions = lhs._dimensionality;
             
             Cluster newCluster = Cluster(dimensions); // creates the new cluster that will contain all points in the lhs cluster + all points in the rhs cluster
 =======
             Cluster newCluster = Cluster(); // creates the new cluster that will contain all points in the lhs cluster + all points in the rhs cluster
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+            Cluster newCluster = Cluster(); // creates the new cluster that will contain all points in the lhs cluster + all points in the rhs cluster
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
             
             while(travelPtrR) // add rhs cluster to new cluster
             {
@@ -391,6 +425,7 @@ namespace Clustering
         travelPtrL = lhs.points; // sets up our travel pointer to start at the head of the lhs cluster
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         unsigned dimension = rhs._dimensionality; // Sets the dimensionality of the clusters passed in and the cluster that is returned equal to each other
         
         Cluster newCluster = Cluster(dimension); // creates the new cluster that will contain only points unique to the lhs and rhs cluster
@@ -401,6 +436,11 @@ namespace Clustering
         
         Cluster tempCluster = Cluster(); // creates a temporary cluster
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        Cluster newCluster = Cluster(); // creates the new cluster that will contain only points unique to the lhs and rhs cluster
+        
+        Cluster tempCluster = Cluster(); // creates a temporary cluster
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         tempCluster = rhs; // sets the temp cluster equal to the rhs cluster
         
@@ -517,12 +557,16 @@ namespace Clustering
         travelPtrL = lhs.points;
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         unsigned dimension = lhs._dimensionality;
         
         Cluster newCluster = Cluster(dimension);
 =======
         Cluster newCluster = Cluster();
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        Cluster newCluster = Cluster();
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         while(travelPtrL) // loop through and add all values of the lhs cluster to the new cluster
         {
@@ -544,12 +588,16 @@ namespace Clustering
         travelPtrL = lhs.points;
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         unsigned dimensions = lhs._dimensionality;
         
         Cluster newCluster = Cluster(dimensions);
 =======
         Cluster newCluster = Cluster();
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        Cluster newCluster = Cluster();
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         while(travelPtrL) // loop through and add all values of the lhs cluster to the new cluster
         {
@@ -568,6 +616,7 @@ namespace Clustering
         
         travelPtr = c.points; // Travel pointer starts at the head
         
+<<<<<<< HEAD
 <<<<<<< HEAD
         if(c.points != nullptr)
         {
@@ -788,6 +837,8 @@ namespace Clustering
     
     }
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         while(travelPtr) // while our travel pointer is pointing to a node, continue looping
         {
             out << *(travelPtr->p) << endl; // cout the point that pointptr p is pointing to
@@ -803,6 +854,9 @@ namespace Clustering
 //
 //    }
     
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 
 }

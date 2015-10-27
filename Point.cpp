@@ -1,18 +1,24 @@
 //
 //  Point.cpp
 <<<<<<< HEAD
+<<<<<<< HEAD
 //  PA3
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA3
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 //  PA2
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA2
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 
 #include "Point.hpp"
 #include <cmath>
@@ -22,14 +28,18 @@
 #include <fstream>
 #include <cstdlib>
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <sstream>
 =======
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 
 using namespace std;
 
 namespace Clustering
 {
+<<<<<<< HEAD
 <<<<<<< HEAD
     const char Point::POINT_VALUE_DELIM = ',';
     
@@ -41,15 +51,24 @@ namespace Clustering
     {
         if (dimensions == 0)
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+    Point::Point(int dimensions) // Constructor invoked when user inputs the number of dimensions
+    {
+        if (dimensions == 0)
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         {
             cout << "You must have at least one dimension." << endl;
         }
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         dim = d;
 =======
         dim = dimensions;
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        dim = dimensions;
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         a = new double[dim]; // Sets the pointer equal to this dynamically allocated array with a certain number of dimensions
     }
@@ -84,6 +103,7 @@ namespace Clustering
     }
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     Point::Point(int dimension, double * something)
     {
        // Is this for our "universe" of points?
@@ -92,12 +112,18 @@ namespace Clustering
     {
        // Optional
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+    Point::Point(int dimensions, double * array)
+    {
+       // Optional
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     }
     
     //Destructor
     
     Point::~Point()
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
         if(a!= nullptr)
         {
@@ -107,6 +133,9 @@ namespace Clustering
 =======
         delete[] a; // Deletes the array
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        delete[] a; // Deletes the array
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     }
     
     // Accessor/Mutator methods
@@ -137,11 +166,15 @@ namespace Clustering
     std::ostream &operator<<(std::ostream & out, const Point & p)
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
         cout << fixed << showpoint << setprecision(1);
        
 =======
         out << "(";
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        out << "(";
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         int i = 0;
         for( ; i < (p.dim-1); i++)
         {
@@ -149,16 +182,21 @@ namespace Clustering
         }
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         out << p.a[i] << " ";
 =======
         out << p.a[i] << ")";
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+        out << p.a[i] << ")";
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     
         return out;
     }
     
     std::istream &operator>>(std::istream & in, Point & p)
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
         // adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point
         
@@ -175,6 +213,8 @@ namespace Clustering
                     p.setValue(i++, pt);
                 }
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         // adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point (must use getline, not >>)
         
         string point; // since getline only takes string arguments, we will have to read in the values and then convert to a double after
@@ -202,7 +242,10 @@ namespace Clustering
         {
             cout << "Error opening file" << endl;
         }
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         
         return in;
         
@@ -481,9 +524,12 @@ namespace Clustering
         }
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         cout << fixed << showpoint << setprecision(2);
 =======
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
         return b;
     }
     

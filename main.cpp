@@ -3,9 +3,12 @@
 #include "Point.hpp"
 #include "Cluster.hpp"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "KMeans.hpp"
 =======
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 #include <cmath>
 #include <iomanip>
 #include <fstream>
@@ -13,6 +16,7 @@
 using namespace std;
 using namespace Clustering;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // PA3
 Point test(Point &, Point &);
@@ -222,6 +226,8 @@ int main()
     
     
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 // PA2 
 int main()
 {
@@ -253,7 +259,10 @@ int main()
     temp6.setValue(1, 1); // Temp 6 = (1, 2, 3)
     temp6.setValue(2, 2);
     temp6.setValue(3, 3);
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     
     // Testing for functions in Point class
     
@@ -379,10 +388,14 @@ int main()
 //    cout << "Temp2 /= 0: " << (temp2/=0) << endl;
     
 <<<<<<< HEAD
+<<<<<<< HEAD
        // / Function*******************************************************
 =======
     // / Function*******************************************************
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+    // / Function*******************************************************
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 //    temp3 = temp2/1.73;
 //    cout << "Temp2 / 1.73: " << temp3 << endl;
 //    cout << "Temp2 / 0: " << (temp2/0) << endl;
@@ -492,6 +505,7 @@ int main()
     // -= Cluster Operator*************************************************
     
 <<<<<<< HEAD
+<<<<<<< HEAD
 //    Cluster c3, c4, c5;
 //    
 //    c3.add(&temp); // Same as temp 6 - should be removed
@@ -503,6 +517,8 @@ int main()
 //    c4.add(&temp4);
 //////
 =======
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
     Cluster c3, c4, c5;
     
     c3.add(&temp); // Same as temp 6 - should be removed
@@ -513,7 +529,10 @@ int main()
     c4.add(&temp5);
     c4.add(&temp4);
 ////
+<<<<<<< HEAD
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 //    (c3-=c4);
 //    
 //    cout << "new c3: " << c3 << endl;
@@ -525,10 +544,14 @@ int main()
 //    cout << "c3: " << c3 << endl;
 //    cout << "C4: " << c4 << endl;
 <<<<<<< HEAD
+<<<<<<< HEAD
 //
 =======
 //    
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+//    
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
 //    c5 = c4;
 //    
 //    cout << "c4: " << c4 << endl;
@@ -625,6 +648,7 @@ int main()
 //    cout << "c5: " << c5 << endl;
     
 <<<<<<< HEAD
+<<<<<<< HEAD
  //   int c;
 
  // cout << "Test: " <<  test(temp, temp2);
@@ -679,3 +703,7 @@ int main()
     return 0;
 }
 >>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
+=======
+    return 0;
+}
+>>>>>>> 569579b153efe737b653565f27b287ccaf53517f
