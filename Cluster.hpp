@@ -1,10 +1,18 @@
 //
 //  Cluster.hpp
+<<<<<<< HEAD
 //  PA3
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA3
+=======
+//  PA2
+//
+//  Created by Kathryn Chrisman on 9/17/15.
+//  Copyright © 2015 Kathryn. All rights reserved.
+// PA2
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
 
 #ifndef Cluster_hpp
 #define Cluster_hpp
@@ -16,7 +24,11 @@ namespace Clustering
 {
     typedef Point *PointPtr;
     typedef struct LNode *LNodePtr;
+<<<<<<< HEAD
    
+=======
+    
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
     struct LNode
     {
         PointPtr p; // Pointer in each node that points to a point value
@@ -25,6 +37,7 @@ namespace Clustering
     
     class Cluster
     {
+<<<<<<< HEAD
     private:
 //        class Centroid
 //        {
@@ -113,10 +126,20 @@ namespace Clustering
         // ID getter
         unsigned int getID() const {return _id;}
         
+=======
+        int size;
+        LNodePtr points; // Pointer variable that points to the head of our linked list (head pointer)
+        
+    public:
+        Cluster(); // Default constructor to initialize Cluster to 0 and points to nullptr
+        Cluster(const Cluster &); // Overloaded copy constructor
+        Cluster &operator=(const Cluster &); // Overloaded assignment operator
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         ~Cluster(); // Destructor - must be overloaded to deallocate memory
         
         // Set functions - allow you to add a point to one cluster while simultaneously deleting it from its previous cluster (i.e. c1.add(c2.remove(p));
         void add(const PointPtr &); // Add points by linked list
+<<<<<<< HEAD
         void setCentroid(const Point & point);
         void setStatus(const bool & status) {_centroidValid = status;}
         
@@ -132,6 +155,8 @@ namespace Clustering
         void computeCentroid(const Cluster &);
         
         // Remove Functions
+=======
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         const PointPtr &remove(const PointPtr &); // Removed points by linked list 
         void removeDuplicates(Cluster &); // Iterates through a linked list to check for and remove duplicates
         
@@ -159,6 +184,7 @@ namespace Clustering
         friend const Cluster operator+(const Cluster & lhs, const PointPtr & rhs);
         friend const Cluster operator-(const Cluster & lhs, const PointPtr & rhs);
         
+<<<<<<< HEAD
         // Function to pick points from a cluster that would serve as the initial set of centroids
         
         void pickPoints(int k, PointPtr *pointArray);
@@ -173,6 +199,8 @@ namespace Clustering
         
         friend double interClusterEdges(const Cluster & c1, const Cluster & c2);
         
+=======
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
     };
 
 }

@@ -1,10 +1,18 @@
 //
 //  Point.hpp
+<<<<<<< HEAD
 //  PA3
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA3
+=======
+//  PA2
+//
+//  Created by Kathryn Chrisman on 9/17/15.
+//  Copyright © 2015 Kathryn. All rights reserved.
+// PA2
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
 
 #ifndef Point_hpp
 #define Point_hpp
@@ -14,17 +22,27 @@
 
 namespace Clustering
 {
+<<<<<<< HEAD
     
+=======
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
     class Point
     {
     private:
         double *a; // values of the point's dimensions
         int dim; // number of dimensions
+<<<<<<< HEAD
         static const char POINT_VALUE_DELIM;
         
     public:
         // Constructors
         Point(int d); // Dynamically allocated array and int dim
+=======
+        
+    public:
+        // Constructors
+        Point(int); // Dynamically allocated array and int dim
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         Point(int, double*); // OPTIONAL
         
         Point(const Point &); // Overloaded copy constructor

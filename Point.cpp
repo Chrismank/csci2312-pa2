@@ -1,10 +1,18 @@
 //
 //  Point.cpp
+<<<<<<< HEAD
 //  PA3
 //
 //  Created by Kathryn Chrisman on 9/17/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
 // PA3
+=======
+//  PA2
+//
+//  Created by Kathryn Chrisman on 9/17/15.
+//  Copyright © 2015 Kathryn. All rights reserved.
+// PA2
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
 
 #include "Point.hpp"
 #include <cmath>
@@ -13,22 +21,35 @@
 #include <string>
 #include <fstream>
 #include <cstdlib>
+<<<<<<< HEAD
 #include <sstream>
+=======
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
 
 using namespace std;
 
 namespace Clustering
 {
+<<<<<<< HEAD
     const char Point::POINT_VALUE_DELIM = ',';
     
     Point::Point(int d) // Constructor invoked when user inputs the number of dimensions
     {
         if (d == 0)
+=======
+    Point::Point(int dimensions) // Constructor invoked when user inputs the number of dimensions
+    {
+        if (dimensions == 0)
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         {
             cout << "You must have at least one dimension." << endl;
         }
         
+<<<<<<< HEAD
         dim = d;
+=======
+        dim = dimensions;
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         
         a = new double[dim]; // Sets the pointer equal to this dynamically allocated array with a certain number of dimensions
     }
@@ -62,20 +83,30 @@ namespace Clustering
         return *this;
     }
     
+<<<<<<< HEAD
     Point::Point(int dimension, double * something)
     {
        // Is this for our "universe" of points?
+=======
+    Point::Point(int dimensions, double * array)
+    {
+       // Optional
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
     }
     
     //Destructor
     
     Point::~Point()
     {
+<<<<<<< HEAD
         if(a!= nullptr)
         {
             delete[] a; // Deletes the array
         }
         
+=======
+        delete[] a; // Deletes the array
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
     }
     
     // Accessor/Mutator methods
@@ -105,21 +136,30 @@ namespace Clustering
     
     std::ostream &operator<<(std::ostream & out, const Point & p)
     {
+<<<<<<< HEAD
         cout << fixed << showpoint << setprecision(1);
        
+=======
+        out << "(";
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         int i = 0;
         for( ; i < (p.dim-1); i++)
         {
             out << p.a[i] << ", ";
         }
         
+<<<<<<< HEAD
         out << p.a[i] << " ";
+=======
+        out << p.a[i] << ")";
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
     
         return out;
     }
     
     std::istream &operator>>(std::istream & in, Point & p)
     {
+<<<<<<< HEAD
         // adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point
         
                 string value; // Take in each point in our line as a string
@@ -134,6 +174,35 @@ namespace Clustering
                    // cout << "Value: " << pt << endl;
                     p.setValue(i++, pt);
                 }
+=======
+        // adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point (must use getline, not >>)
+        
+        string point; // since getline only takes string arguments, we will have to read in the values and then convert to a double after
+        
+        // Open the file for input
+        
+        ifstream inputFile;
+        inputFile.open(""); // place the name of the file inside of the quotations
+        
+        if(inputFile) // if the file opens, then execute
+        {
+            getline(inputFile, point, ','); // reads until a comma is encountered, each comma encountered will be a dimension
+            p.dim++;
+            while(inputFile)
+            {
+                cout << point << endl; // displays the value we just read in
+                getline(inputFile, point, ','); // reads the next number in the list
+                p.dim++;
+            }
+            
+            inputFile.close();
+        }
+        
+        else
+        {
+            cout << "Error opening file" << endl;
+        }
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         
         return in;
         
@@ -411,7 +480,10 @@ namespace Clustering
             b.a[i] = (lhs.a[i] + rhs.a[i]);
         }
         
+<<<<<<< HEAD
         cout << fixed << showpoint << setprecision(2);
+=======
+>>>>>>> 9a9953fcfe6bd1a9c4a52c1cb6a5bd977f6158ea
         return b;
     }
     
