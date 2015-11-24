@@ -1,202 +1,158 @@
-//
 //  Cluster.cpp
-//  PA3
-//
-//  Created by Kathryn Chrisman on 9/17/15.
+//  Programming Assignment 4 Final
+//  Created by Kathryn Chrisman on 10/31/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
-// PA3
 
-#include "Cluster.hpp"
-#include "Point.hpp"
 #include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <forward_list>
+
+#include "Point.hpp"
+#include "Cluster.hpp"
+#include "Exceptions.hpp"
 
 using namespace std;
 
 namespace Clustering
 {
-  
-    unsigned int Cluster::_idGenerator = 1;
-    
-    const char Cluster::POINT_CLUSTER_ID_DELIM = ':';
-    
-    
-    Cluster::~Cluster()
+    template<typename T, int dim>
+    unsigned int Cluster<T, dim>::numberImported()
     {
-        LNodePtr travelPtr, prevNode = nullptr;
-        
-        travelPtr = points;
-        
-        while(travelPtr != nullptr)
-        {
-            prevNode = travelPtr; // set prev node up to equal our travelptr
-            travelPtr = travelPtr->next; // set travelptr equal to the next node in the list
-            delete prevNode; // delete the previous node
-            
-        }
+        return _numImported++;
     }
     
-    Cluster & Cluster::operator=(const Cluster & rhs)
+    template<typename T, int dim>
+    unsigned int Cluster<T, dim>::numberFailed()
     {
-        // This function modifies an existing object, not create a new one
-        // Set pointptrs equal, don't create a new point
+       return _numFailed++;
+    }
+    
+    template<typename T, int dim>
+    unsigned int Cluster<T, dim>::_idGenerator = 1;
+    
+    template<typename T, int dim>
+    const char Cluster<T, dim>::POINT_CLUSTER_ID_DELIM = ':';
+    
+    template<typename T, int dim>
+    Cluster<T, dim>::~Cluster<T, dim>()
+    {
         
-        LNodePtr travelPtrR, travelPtrL;
+    }
+    
+    template<typename T, int dim>
+    Cluster<T, dim>::Cluster()
+    {
+        size = 0;
+        _id = _idGenerator++;
+        _centroidValid = false;
+    }
+    
+    template<typename T, int dim>
+    Cluster<T, dim>::Cluster(const Cluster<T, dim> & rhs) // Overloaded copy constructor
+    {
+        auto it = rhs.list.begin();
         
-       if(size == rhs.size || size != rhs.size) // delete cluster on lhs so you can assign values in rhs to it
-       {
-           LNodePtr travelPtr, smallerNode = nullptr;
-           
-           travelPtr = points;
-           
-           while(travelPtr != nullptr)
-           {
-               smallerNode = travelPtr;
-               delete smallerNode;
-               travelPtr = travelPtr->next;
-           }
-           
-           travelPtrL = new LNode;
-           points = travelPtrL; // set our head pointer equal to the first node in our list that we just created
-        }
-        
-        travelPtrR = rhs.points; // sets travelptrR up to start at the head of the list
-        size = rhs.size; // sets the sizes equal
-        
-        points = travelPtrL;
-        travelPtrL->next = new LNode;
-
-        while(travelPtrR != nullptr)
+        for( ; it != rhs.list.end(); ++it)
         {
-            travelPtrL->p = travelPtrR->p; // set the pointptr of this node equal to the pointptr of the rhs cluster
-            travelPtrR = travelPtrR->next; // move to next node in rhs cluster
-            
-            if(travelPtrR != nullptr)
-            {
-                travelPtrL->next = new LNode; // point my last travelptr to a new node
-                travelPtrL = travelPtrL->next;
-            }
-        
+            add(*it);
         }
         
-        travelPtrL->next = nullptr; // The last node in the cluster on our lhs is now pointing to nullptr
+        _id = rhs._id;
+        size = rhs.size;
+        setStatus(false); // Centroid status set to false
+    }
+    
+    template<typename T, int dim>
+    Cluster<T, dim> & Cluster<T, dim>::operator=(const Cluster<T, dim> & rhs)
+    {
+        // Assign contents of rhs list to lhs list and set sizes equal
         
+        list.assign(rhs.list.begin(), rhs.list.end());
+        
+        size = rhs.size;
+
         return *this;
     }
     
-    void Cluster::add(const PointPtr & value) // Add a node to the linked list (PointPtrs are contained in our nodes) - Refer to page 1035 in Starting Out W C++
+    template<typename T, int dim>
+    void Cluster<T, dim>::add(const Point<T, dim> & value)
     {
-        LNodePtr newNode; // This is the pointer that will point to the new node in our list
-        LNodePtr travelPtr; // Used to travel down the linked list in search of the last node
-        LNodePtr smallerNode = nullptr; // Points to the node in our list holding a smaller value than our new node, which allows us to insert the new node in between here and the next node
-        
-        // Here is where we will make a new node and store the pointer to our point value in it. The pointptr is represented by member variable p
-        
-        newNode = new LNode;
-        newNode->p = value;
-        
-        // Here we're checking to see if our head pointer points to nullptr, indicating that there are no nodes in our list. If it does, the new node we created is now the first in our list
-    
-        if(points == nullptr)
+        // If the list is empty, we will insert the point at the front
+        if(list.empty() == true)
         {
-            points = newNode; // now our head pointer is pointing to this new node
-            newNode->next = nullptr; // this new node is last in our list and is now pointing to nullptr
+            list.push_front(value);
         }
         
-        // Otherwise, insert newNode somewhere else in our list, keeping our points in order
+        // Otherwise, insert the point somewhere else in our list, keeping our points in order
         
         else
         {
-            travelPtr = points; // Initialize travelPtr to the head of our list, so it can travel down the list and find where we want to insert our new node
-            smallerNode = nullptr;
+            auto it = list.begin(); // Start at the head of our list
+            auto before = list.before_begin(); // Start at one before the head of our list
             
-            while(travelPtr != nullptr && *(travelPtr->p) < *(value)) // while our travelptr points to a node, and the value pointed to by our pointptr is less than the new value, continue looping
+            // While our list isn't at the end and the values in the list are less than the value we're inserting, continue looping
+            while(it != list.end() && (*it) < (value))
             {
-                smallerNode = travelPtr;
-                travelPtr = travelPtr->next;
+                before = it;
+                ++it;
+            }
+
+            // If the new point is the smallest, we need to insert it at the start of the list
+            if(before == list.before_begin())
+            {
+                list.push_front(value);
             }
             
-            // If the new node is the smallest, we need to insert it at the start of the list
-            
-            if(smallerNode == nullptr) // This means that we've gone through the whole list without finding a point larger than the point we're inserting
-            {
-                points = newNode; // head pointer is now pointing to our new node
-                newNode->next = travelPtr; // Our new node is now pointing to the next node in our list (travelptr is one ahead of new node)
-            }
-            
-            // If the new node is the largest, we need to insert it at the end of the list
-            
+            // If the new point is the largest, we need to insert it at the end of the list
             else
             {
-                smallerNode->next = newNode; // Point the final node to the new node
-                newNode->next = travelPtr; // Point the new node to nullptr (travelptr is one ahead of new node)
+                list.insert_after(before, value);
             }
             
         }
-    
-        size++; // Adds 1 to the size of the cluster
+        
+        size++; // Add 1 to the size of the cluster
     }
     
-    
-    const PointPtr & Cluster::remove(const PointPtr & value) // Remove a node from the linked list - refer to page 1039 in Starting Out w C++
+    template<typename T, int dim>
+    const Point<T, dim> & Cluster<T, dim>::remove(const Point<T, dim> & value)
     {
-        LNodePtr travelPtr; // Goes through the list
-        LNodePtr smallerNode = nullptr; // Points to the node in the list that is before the node pointed to by the travelptr
+        // Check to see if there is anything in our list, if not then simply return the value without changing anything
         
-        // Checks to see if there is anything in our list, if not then simply return the value without changing anything
-        
-        if(points == nullptr)
+        if(list.empty() == true)
         {
+            throw RemoveFromEmptyEx();
             return value;
         }
         
-        // Checks to see if the first node is the one being deleted. If so, we need to make sure our head pointer is now pointing to the new first node in our list
-        
-        if(*(points->p) == *(value))
-        {
-            travelPtr = points->next; // travelptr now points to the node that our head pointer was pointing to
-            delete points; // delete the old head node
-            points = travelPtr; // new head node is now the travelptr
-            
-            size--; // decrease size of our cluster by 1
-        }
-        
-        // If the value being deleted is somewhere in the middle or at the end of our node
-        
         else
         {
+            auto it = list.begin();
             
-            travelPtr = points; // make sure travelptr is starting out at the head of our list
+            for( ; it != list.end(); ++it)
+            {
+                if(*it == value) // id values and coordinates in overloaded == are being compared before removing
+                {
+                    list.remove(value);
+                }
+            }
             
-        while(travelPtr != nullptr && *(travelPtr->p) != *(value)) // loops through while our travelptr doesn't hit the end of our list and while the travel pointer doesn't equal the point we want to delete
-        {
-            smallerNode = travelPtr;
-            travelPtr = travelPtr->next;
         }
         
-        // Once our travelptr hits the node we want to delete, we need to have our smallerPtr point to the next node that our travelptr was pointing to (the one after the node we want to delete)
+        size--; // Decrease the size of our cluster by 1
         
-        if(travelPtr != nullptr)
-        {
-            smallerNode->next = travelPtr->next;
-            delete travelPtr; // node is no longer a part of our linked list and therefore needs to be deleted
-        }
-            
-            size--; // Decrease the size of our cluster by 1
-    
-        }
-
         return value;
-}
+    }
     
-    bool operator==(const Cluster & lhs, const Cluster & rhs) // Comparing the points in two clusters to see if the two clusters are equal
+    template<typename T, int dim>
+    bool operator==(const Cluster<T, dim> & lhs, const Cluster<T, dim> & rhs)
     {
-        LNodePtr travelPtrL, travelPtrR; // travelPtrL is a pointer corresponding to the lhs cluster, and travelPtrR is a pointer corresponding to the rhs cluster
-        
+        // Comparing the points in two clusters to see if the two clusters are equal
+       
         if(lhs.size != rhs.size) // If the sizes of the two clusters aren't equal, they are not the same
         {
             return false;
@@ -204,356 +160,283 @@ namespace Clustering
         
         else
         {
-        
-            travelPtrL = lhs.points; // sets travelPtrL to the head of cluster on left hand side
-            travelPtrR = rhs.points; // sets travelPtrR to the head of cluster on the right hand side
-            
-            while(travelPtrL && travelPtrR) // Will go through each linked list until it hits nullptr
+            auto it = rhs.list.begin();
+            auto it2 = lhs.list.begin();
+         
+            while(it != rhs.list.end() && it2 != lhs.list.end()) // Go through each linked list
             {
-                if(travelPtrL->p == travelPtrR->p) // If the addresses at each node are equal, continue iterating, else return false
-                    {
-                        travelPtrL = travelPtrL->next;
-                        travelPtrR = travelPtrR->next;
-                    }
+                if(*it == *it2) // If the addresses at each node are equal, continue iterating, else return false
+                {
+                    ++it;
+                    ++it2;
+                }
                 
                 else
                 {
                     return false;
                 }
-               
+                
             }
             
             return true;
         }
     }
-        
-    const Cluster operator+(const Cluster & lhs, const Cluster & rhs)
-        {
-            LNodePtr travelPtrR, travelPtrL; // travelPtrR corresponds to rhs cluster, travelPtrL corresponds to lhs cluster
-            
-            travelPtrR = rhs.points; // sets up our travel pointer to start at the head of the rhs cluster
-            travelPtrL = lhs.points; // sets up our travel pointer to start at the head of the lhs cluster
-            
-            unsigned dimensions = lhs._dimensionality;
-            
-            Cluster newCluster = Cluster(dimensions); // creates the new cluster that will contain all points in the lhs cluster + all points in the rhs cluster
-            
-            while(travelPtrR) // add rhs cluster to new cluster
-            {
-                newCluster.add(travelPtrR->p);
-                travelPtrR = travelPtrR->next;
-            }
-            
-            while(travelPtrL) // add lhs cluster to new cluster
-            {
-                newCluster.add(travelPtrL->p);
-                travelPtrL = travelPtrL->next;
-            }
-            
-            return newCluster; // returns the new cluster with the values in both the lhs and rhs
-         
-        }
     
-    Cluster & Cluster::operator+=(const Cluster & rhs) // Union of 2 clusters - only those values that are unique are added
+    template<typename T, int dim>
+    const Cluster<T, dim> operator+(const Cluster<T, dim> & lhs, const Cluster<T, dim> & rhs)
     {
-        LNodePtr travelPtrR; // travelPtrR corresponds to rhs cluster
+        Cluster<T, dim> newCluster; // newCluster now contains all points in lhs cluster
         
-        travelPtrR = rhs.points; // sets up our travel pointer to start at the head of the rhs cluster
-    
-        // Since we are adding the cluster on the rhs to the cluster on the lhs, we need to pass each pointptr from the linked list on the rhs cluster to the add() function so that they will be added in order to the lhs cluster
+        auto it = rhs.list.begin();
         
-        // Since the linked lists contain different values, we cannot directly compare each element. Therefore, we will add all items from the rhs to the lhs and then we will check for and delete duplicates
-        
-        while(travelPtrR)
+        for( ; it != rhs.list.end(); ++it) // add all points in rhs cluster to newCluster
         {
-            add(travelPtrR->p);
-            travelPtrR = travelPtrR->next;
+            newCluster.add(*it);
         }
         
-        // Now that all items are added from the rhs, we will check for duplicates and remove them
-  
-        removeDuplicates(*this);
+        return newCluster;
         
-        // Return the lhs cluster, which now contains only the distinct values in the rhs cluster
+    }
+    
+    template<typename T, int dim>
+    Cluster<T, dim> & Cluster<T, dim>::operator+=(const Cluster<T, dim> & rhs)
+    {
+        // Union of 2 clusters - only those values that are unique are added
+      
+        // Loop through and count the number of duplicates
+        auto it = rhs.list.begin();
+        auto it2 = list.begin();
+        int count = 0;
+        
+        for( ; it2 != list.end() ; ++it2)
+        {
+            auto it3 = rhs.list.begin();
+            
+            cout << "it2: " << *it2 << endl;
+            
+            for( ; it3 != rhs.list.end(); ++it3)
+            {
+                cout << "it3: " << *it3 << endl;
+                
+                if(*it2 == *it3)
+                {
+                    count++;
+                }
+            }
+        }
+        
+        // Add all values from rhs cluster to this cluster
+        for( ; it != rhs.list.end(); ++it)
+        {
+           add(*it);
+        }
+        
+        // Remove duplicate elements of the list
+        list.unique();
+        
+        // Update size of cluster
+        size = size-count;
         
         return *this;
     }
     
-    void Cluster::removeDuplicates(Cluster & value)
+    template<typename T, int dim>
+    void Cluster<T, dim>::removeDuplicates(Cluster<T, dim> & value)
     {
-        LNodePtr travelPtr, smallerNode;
+        auto it = ++ value.list.begin();
+        auto before = value.list.begin();
         
-        travelPtr = value.points->next; // Sets our travelPtr to the node after the head of our cluster
-        smallerNode = value.points; // Sets our smaller node to the head of our cluster
-    
-        
-        while(travelPtr != nullptr && *(smallerNode->p) <= *(travelPtr->p)) // while our travelptr points to a node, and the value pointed to in our smallerNode is less than/equal to next value (pointed to by our travelPtr), continue looping
+        // While our iterator points to a node, and the value pointed to before is less than/equal to next value, continue looping
+        while(it != value.list.end() && *before <= *it)
         {
-            if(*(smallerNode->p) == *(travelPtr->p)) // If the point values are equal, remove one and then move to the next two nodes
+            if(*before == *it) // If the point values are equal, remove one and then move to the next two nodes
             {
-                remove(smallerNode->p);
-                smallerNode = travelPtr;
-                travelPtr = travelPtr->next;
+                remove(*before);
+                before = it;
+                ++it;
+                cout << "list after iteration: " << value << endl;
             }
             
-            else // if the points are not equal, do nothing and move on to the next two nodes
+            else // If the points are not equal, do nothing and move on to the next two nodes
             {
-                smallerNode = travelPtr;
-                travelPtr = travelPtr->next;
+                before = it;
+                ++it;
             }
-         
+            
+            
         }
         
     }
-
-    const Cluster operator-(const Cluster & lhs, const Cluster & rhs)
+    
+    template<typename T, int dim>
+    const Cluster<T, dim> operator-(const Cluster<T, dim> & lhs, const Cluster<T, dim> & rhs)
     {
         // This operator is set destructive, so it will not remove all of the instances of a point in the lhs
         
-        LNodePtr travelPtrR, travelPtrL; // travelPtrR corresponds to rhs cluster, travelPtrL corresponds to lhs cluster
+        Cluster<T, dim> newCluster; // newCluster now contains all points in lhs cluster
+      
+        auto it = rhs.list.begin();
         
-        travelPtrR = rhs.points; // sets up our travel pointer to start at the head of the rhs cluster
-        travelPtrL = lhs.points; // sets up our travel pointer to start at the head of the lhs cluster
-        
-        unsigned dimension = rhs._dimensionality; // Sets the dimensionality of the clusters passed in and the cluster that is returned equal to each other
-        
-        Cluster newCluster = Cluster(dimension); // creates the new cluster that will contain only points unique to the lhs and rhs cluster
-        
-        Cluster tempCluster = Cluster(dimension); // creates a temporary cluster
-        
-        tempCluster = rhs; // sets the temp cluster equal to the rhs cluster
-        
-        newCluster = lhs; // sets new cluster equal to the lhs cluster
-        
-        while(travelPtrL)
+        for( ; it != lhs.list.end(); ++it)
         {
+            auto it2 = rhs.list.begin();
             
-            travelPtrR = tempCluster.points;
-            
-            while(travelPtrR)
+            for( ; it2 != rhs.list.end(); ++it2)
             {
-                if(*(travelPtrR->p) == *(travelPtrL->p))
+                if(*it == *it2)
                 {
-                    newCluster.remove(travelPtrL->p);
-                    tempCluster.remove(travelPtrR->p);
+                    newCluster.remove(*it);
                 }
-                
-                travelPtrR = travelPtrR->next;
             }
             
-            
-            travelPtrL = travelPtrL->next;
         }
-        
-        return newCluster; // returns the new cluster with the values in both the lhs and rhs
-    }
-    
-    Cluster & Cluster::operator-=(const Cluster & rhs) // Asymmetric difference
-    {
-        // If there is a value present in both the rhs and the lhs (intersection) then we need to remove the point from the lhs cluster 
-        
-        LNodePtr travelPtrR, travelPtrL; // travelPtrR corresponds to rhs cluster
-        
-        travelPtrR = rhs.points; // sets up our travel pointer to start at the head of the rhs cluster
-        travelPtrL = points;
-        // We are calculating the asymmetric difference - so if a value is found to be in both clusters, it needs to be removed (lhs - rhs = the points that are in the lhs but not in the rhs)
-        
-        while(travelPtrL)
-        {
-            
-            travelPtrR = rhs.points;
-            
-            while(travelPtrR)
-            {
-                if(*(travelPtrR->p) == *(travelPtrL->p))
-                {
-                    remove(travelPtrL->p);
-                }
-                
-                travelPtrR = travelPtrR->next;
-            }
-           
-            
-            travelPtrL = travelPtrL->next;
-        }
-        
-        // Return the lhs cluster, which now contains only the distinct values in the lhs cluster
-        
-        return *this;
-    }
-    
-    Cluster & Cluster::operator+=(const Point & rhs)
-    {
-        // Needs to preserve the set
-        
-        // Our add function takes a pointptr as an argument, not a point, so we need to make sure this point is pointed to by a pointptr, and then pass this pointptr to our add() function
-        
-        LNodePtr travelPtrL;
-        PointPtr newPoint;
-        travelPtrL = points;
-        
-        newPoint = new Point(rhs);
-        
-        while(travelPtrL)
-        {
-            if(*(travelPtrL->p) == *(newPoint)) // if this point is equal to a point that is already in our cluster, we don't want to add it
-            {
-                return *this;
-            }
-            
-            travelPtrL = travelPtrL->next;
-        }
-        
-        add(newPoint);
-        
-        return *this;
-    }
-    
-    Cluster & Cluster::operator-=(const Point & rhs)
-    {
-        // Needs to preserve the set - removes all points that match the argument
-        
-        // Our remove function takes a pointptr as an argument, not a point, so we need to make sure this point is pointed to by a pointptr, and then pass this pointptr to our remove() function
-        LNodePtr travelPtrL = points;
-        PointPtr newP = new Point(rhs);
-        
-        while(travelPtrL) // loops through the cluster
-        {
-            remove(newP); // removes all points equal to the argument (preserves the set)
-            travelPtrL = travelPtrL->next;
-        }
-        
-        return *this;
-    }
-    
-    const Cluster operator+(const Cluster & lhs, const PointPtr & rhs)
-    {
-        
-        // Cluster = cluster lhs + pointptr rhs
-        
-       LNodePtr travelPtrL;
-       
-        travelPtrL = lhs.points;
-        
-        unsigned dimension = lhs._dimensionality;
-        
-        Cluster newCluster = Cluster(dimension);
-        
-        while(travelPtrL) // loop through and add all values of the lhs cluster to the new cluster
-        {
-            newCluster.add(travelPtrL->p);
-            travelPtrL = travelPtrL->next;
-        }
-       
-        newCluster.add(rhs); // now add the new pointpointer to our new cluster
         
         return newCluster;
     }
     
-    const Cluster operator-(const Cluster & lhs, const PointPtr & rhs)
+    template<typename T, int dim>
+    Cluster<T, dim> & Cluster<T, dim>::operator-=(const Cluster<T, dim> & rhs)
     {
-        // Cluster = cluster lhs - pointptr rhs
+        // Asymmetric difference - if there is a value present in both the rhs and the lhs (intersection) then we need to remove the point from the lhs cluster
+       
+        auto it = list.begin();
         
-        LNodePtr travelPtrL;
-        
-        travelPtrL = lhs.points;
-        
-        unsigned dimensions = lhs._dimensionality;
-        
-        Cluster newCluster = Cluster(dimensions);
-        
-        while(travelPtrL) // loop through and add all values of the lhs cluster to the new cluster
+        while(it != list.end())
         {
-            newCluster.add(travelPtrL->p);
-            travelPtrL = travelPtrL->next;
+            auto it2 = rhs.list.begin();
+            
+            for( ; it2 != rhs.list.end(); ++it2)
+            {
+                if(*it == *it2)
+                {
+                   *this = *this - *it2;
+                }
+            }
+            
+            ++it;
         }
         
-        newCluster.remove(rhs); // now remove the point from this new cluster
-        
-        return newCluster;
+       return *this;
     }
     
-    std::ostream &operator<<(std::ostream & out, const Cluster & c) // Prints out the points in a cluster (linked list) - page 1034 of Starting Out w c++
+    template<typename T, int dim>
+    Cluster<T, dim> & Cluster<T, dim>::operator+=(const Point<T, dim> & rhs)
     {
-        LNodePtr travelPtr; // This is the pointer that will move through each point in our linked list
-        
-        travelPtr = c.points; // Travel pointer starts at the head
-        
-        if(c.points != nullptr)
-        {
-            while(travelPtr) // while our travel pointer is pointing to a node, continue looping
-            {
-                out << *(travelPtr->p) << Cluster::POINT_CLUSTER_ID_DELIM << " " << c.getID() << endl; // cout the point that pointptr p is pointing to
-            
-                travelPtr = travelPtr->next; // Move to the next node
-            }
-        
-            return out;
-        }
-        
-        else
-        {
-            cout << c.getID() << endl;
-            return out;
-        }
-    }
-    
-    std::istream &operator>>(std::istream & in, Cluster & c) // adding in a cluster
-    {
-        // adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point
-    
-        string line; // since getline only takes string arguments, we will have to read in the values and then convert to a double after
-    
-        // Open the file for input
-    
-        if(in) // if the file opens, then execute
-        {
-            while(getline(in, line)) // looks at each line as a whole
-            {
-              // converts the line to a stringstream
-                stringstream linestream(line);
-               
-                string value; // Take in each point in our line as a string
-                
-                PointPtr p = new Point(5);
-                
-                //cout << "linestream values: " << linestream.str() << endl;
-                
-                linestream >> *p;
-                
-               // cout << "line: " << line << endl;
-                
-                c.add(p);
-                
-            }
-            
-        }
-            
-        else
-            {
-                cout << "Error opening file" << endl;
-            }
-        
-    return in;
+        add(rhs);
 
+        return *this;
     }
     
-    // Functions for KMeans Algorithm
+    template<typename T, int dim>
+    Cluster<T, dim> & Cluster<T, dim>::operator-=(const Point<T, dim> & rhs)
+    {
+        remove(rhs);
+        
+        return *this;
+    }
     
-    void Cluster::pickPoints(int k, PointPtr *pointArray)
+    template<typename T, int dim>
+    const Cluster<T, dim> operator+(const Cluster<T, dim> & lhs, const Point<T, dim> & rhs)
+    {
+        // newCluster = cluster + point
+        
+        Cluster<T, dim> newCluster; // copy values of lhs cluster into a temporary cluster before adding
+        
+        newCluster.add(rhs);
+        
+        return newCluster;
+    }
+    
+    template<typename T, int dim>
+    const Cluster<T, dim> operator-(const Cluster<T, dim> & lhs, const Point<T, dim> & rhs)
+    {
+        // newCluster = cluster - point
+        
+        Cluster<T, dim> newCluster; // copy values of lhs cluster into a temporary cluster before removing
+        
+        newCluster.remove(rhs);
+        
+        return newCluster;
+    }
+    
+    template<typename T, int dim>
+    std::ostream &operator<<(std::ostream & os, const Cluster<T, dim> & c)
+    {
+        // Prints out the points in the cluster
+        
+        // If the list isn't empty
+        if(c.list.empty() != true)
+        {
+            auto it = c.list.begin();
+        
+            for( ; it != c.list.end(); ++it)
+            {
+                os << *it << Cluster<T, dim>::POINT_CLUSTER_ID_DELIM << " " << c.getID() << endl;
+            }
+            
+            return os;
+        }
+        
+        else
+        {
+            os << c.getID() << endl;
+            return os;
+        }
+        
+    }
+    
+    template<typename T, int dim>
+    std::istream &operator>>(std::istream & in, Cluster<T, dim> & c) // adding in a cluster
+    {
+        // Adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point
+        
+        string line;
+        
+        // Open the file for input
+        
+        if(in)
+        {
+            while(getline(in, line))
+            {
+                stringstream linestream(line);
+                string value;
+                
+                try
+                {
+                    Point<T, dim> p;
+                    linestream >> p;
+                    c.add(p);
+                    c.numberImported();
+
+                } catch (DimensionalityMismatchEx e)
+                {
+                    c.numberFailed();
+                    cout << e << endl;
+                }
+            }
+            
+        }
+        
+        else
+        {
+            cout << "Error opening file" << endl;
+        }
+        
+        return in;
+        
+    }
+    
+    template<typename T, int dim>
+    void Cluster<T, dim>::pickPoints(int k, vector<Point<T, dim>> *pointArray)
     {
         // Count points (size)
         // Divide by k to get step size "step"
         // For every x points, assign a centroid
         
-        LNodePtr travelNode;
-        //travelNode = points;
-        
         int step;
         int newStep = 1;
         int count;
-        
-        // Checks to see if k is greater than the number of points in the cluster
+    
         if(k > size)
         {
             cout << "K value is greater than the number of points. K will be changed to equal the number of points." << endl;
@@ -562,44 +445,38 @@ namespace Clustering
         
         step = size/k;
         
-        // Loop through and assign values to our array
-//        for(int i = 0; i < k; i++)
-//        {
-//            pointArray[i] = travelNode->p;
-//          //  cout << "Point: " << *pointArray[i] << endl;
-//            travelNode = travelNode->next;
-//        }
-        
-        
         for(int i = 0; i < k; i++)
         {
-           // cout << "step going into iteration: " << newStep << endl;
-            travelNode = points;
+            auto it = list.begin();
+    
             count = 1;
             
-                while(travelNode)
+            while(it != list.end())
+            {
+                if(count == newStep)
                 {
-                   // cout << "Point: " << *travelNode->p << endl;
-                    if(count == newStep)
-                    {
-                        pointArray[i] = travelNode->p;
-                    }
-                    
-                    count++;
-                    travelNode = travelNode->next;
+                    pointArray->push_back(*it);
                 }
+                
+                count++;
+                ++it;
+            }
             
             newStep+=step;
         }
-       
-    
-        for(int i = 0; i < k; i++)
+        
+        auto it = pointArray->begin();
+        
+        for( ; it != pointArray->end(); ++it)
         {
-            cout << "Point array check: " << *pointArray[i] << endl;
+            cout << "Point Array check: " << *it << endl;
         }
+        
+        
     }
     
-    int Cluster::getClusterEdges() const
+    template<typename T, int dim>
+    int Cluster<T, dim>::getClusterEdges() const
     {
         int edges = size * (size-1)/2;
         
@@ -608,34 +485,42 @@ namespace Clustering
             edges = 1;
         }
         
-        return edges; // size = the size of the cluster
+        return edges;
     }
     
-    double interClusterEdges(const Cluster & c1, const Cluster & c2)
+    template<typename T, int dim>
+    T interClusterEdges(const Cluster<T, dim> & c1, const Cluster<T, dim> & c2)
     {
-        return(c1.size * c2.size);
+        double intEdge = (c1.size * c2.size);
+        
+        if(intEdge == 0)
+        {
+            intEdge = 1;
+        }
+        
+        return intEdge;
     }
     
-    double Cluster::intraClusterDistance() const
+    template<typename T, int dim>
+    T Cluster<T, dim>::intraClusterDistance() const
     {
-        // Calculates the sum of the distances between every two points in the cluster - use two while loops
-        LNodePtr OuterTravelNode = points; // sets up our travel node to start at the head of the cluster
-        LNodePtr InnerTravelNode;
+        // Calculates the sum of the distances between every two points in the cluster
+        
+        auto it = list.begin();
         
         double sum;
         
-        while(OuterTravelNode)
+        while(it != list.end())
         {
-            InnerTravelNode = points;
+            auto it2 = list.begin();
             
-            while(InnerTravelNode)
-                {
-                    sum += (*OuterTravelNode->p).distanceTo(*InnerTravelNode->p);
-                    InnerTravelNode = InnerTravelNode->next;
-                }
-                
-            OuterTravelNode = OuterTravelNode->next;
+            while(it2 != list.end())
+            {
+                sum += (*it).distanceTo(*it2);
+                ++it2;
+            }
             
+            ++it;
         }
         
         cout << "IntraCluter Distance: " << sum/2 << endl;
@@ -643,59 +528,86 @@ namespace Clustering
         return (sum/2);
     }
     
-    double interClusterDistance(const Cluster & c1, const Cluster & c2)
+    template<typename T, int dim>
+    T interClusterDistance(const Cluster<T, dim> & c1, const Cluster<T, dim> & c2)
     {
-        // set up our travel pointers to start at the head of each of our clusters
-        
-        LNodePtr travelNodec1 = c1.points;
-        LNodePtr travelNodec2;
+        // Calculates the sum of the distances between each point in two clusters
+      
+        auto it = c1.list.begin();
         
         double sum;
         
-        while(travelNodec1)
+        while(it != c1.list.end())
         {
-            travelNodec2 = c2.points;
+            auto it2 = c2.list.begin();
             
-            while(travelNodec2)
+            while(it2 != c2.list.end())
             {
-                sum += (*travelNodec1->p).distanceTo(*travelNodec2->p);
-                travelNodec2 = travelNodec2->next;
+                sum += (*it).distanceTo(*it2);
+                ++it2;
             }
             
-            travelNodec1 = travelNodec1->next;
+            ++it;
         }
         
         return sum;
     }
     
-    void Cluster::setCentroid(const Point & point)
+    template<typename T, int dim>
+    void Cluster<T, dim>::setCentroid(const Point<T, dim> & point)
     {
-       // cout << "Point: " << point << endl;
-       // cout << "Point Dimensions: " << point.getDims() << endl;
         setStatus(true);
         _centroid = point;
     }
     
-    void Cluster::computeCentroid(const Cluster & c)
+    template<typename T, int dim>
+    void Cluster<T, dim>::computeCentroid(const Cluster<T, dim> & c)
     {
-        // Centroid is an imaginary point that is the mean of all the points in a cluster. However big our cluster is will be the number we divide the dimensions in our centroid by.
-        cout << "ComputeCentroid function called" << endl;
-        LNodePtr travelNode = c.points; // This LNodePtr will travel through the linked list of our cluster and access the points in each of our nodes
+        // Centroid is an imaginary point that is the mean of all the points in a cluster
         
-        Point tempCentroid(_dimensionality);
+            auto it = c.list.begin();
         
-        while(travelNode)
-        {
-            tempCentroid += *(travelNode->p); // assigning our pointptr to a new, dynamically allocated point that is the sum of the point values in our cluster c
+            if(c.list.empty() == true)
+            {
+                throw RemoveFromEmptyEx();
+            }
             
-            travelNode = travelNode->next;
+            while(it != c.list.end())
+            {
+                cout << "it: " << *it << endl;
+                _centroid += (*it);
+                ++it;
+            }
+            
+            _centroid /= c.size;
+            
+            setStatus(true);
+            setCentroid(_centroid);
+    }
+    
+    template<typename T, int dim>
+    Point<T, dim> & Cluster<T, dim>::operator[](int index)
+    {
+        int count = 0;
+        
+        if(index >= size)
+        {
+            throw OutOfBoundsEx(index);
+        }
+        
+        auto it = list.begin();
+        
+        for( ; it != list.end(); ++it)
+        {
+            if(count == index)
+            {
+                return *it;
+            }
+            
+            count++;
         }
     
-        (tempCentroid) /= c.size;
-        
-        setStatus(true);
-        setCentroid(tempCentroid);
-    
+        return *list.begin();
     }
-
+    
 }

@@ -1,12 +1,10 @@
 //
 //  Point.cpp
-//  PA3
+//  Programming Assignment 4 Final
 //
-//  Created by Kathryn Chrisman on 9/17/15.
+//  Created by Kathryn Chrisman on 10/31/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
-// PA3
 
-#include "Point.hpp"
 #include <cmath>
 #include <iostream>
 #include <iomanip>
@@ -14,144 +12,165 @@
 #include <fstream>
 #include <cstdlib>
 #include <sstream>
+#include <vector>
+
+#include "Point.hpp"
+#include "Exceptions.hpp"
 
 using namespace std;
 
 namespace Clustering
 {
-    const char Point::POINT_VALUE_DELIM = ',';
+    template<typename T, int dim>
+    const char Point<T, dim>::POINT_VALUE_DELIM = ',';
     
-    Point::Point(int d) // Constructor invoked when user inputs the number of dimensions
+    template<typename T, int dim>
+    unsigned int Point<T, dim>::_idGeneratorPt = 1;
+    
+    template<typename T, int dim>
+    Point<T, dim>::Point()
     {
-        if (d == 0)
-        {
-            cout << "You must have at least one dimension." << endl;
-        }
+        cout << "Dimensions: " << dim << endl;
         
-        dim = d;
-        
-        a = new double[dim]; // Sets the pointer equal to this dynamically allocated array with a certain number of dimensions
+        _idPt = _idGeneratorPt++;
+       
+        cout << "Point ID: " << _idPt << endl;
     }
     
-    Point::Point(const Point &rhs) // Overloaded copy constructor
+    template<typename T, int dim>
+    Point<T, dim>::Point(const Point<T, dim> & rhs)
     {
-        dim = rhs.dim; // Sets same number of dimensions to each object
-        a = new double[dim]; // Makes the new object an array that is dynamically allocated
-        
-        for (int i = 0; i < dim; i++) // Copies the values from one array to another
+        for (int i = 0; i < dim; i++) // Copies the values from one vector to another
         {
-            a[i] = rhs.a[i];
+            a.push_back(rhs.a[i]);
         }
+        
     }
     
-    Point & Point::operator=(const Point & rhs) // Overloaded assignment operator
+    template<typename T, int dim>
+    Point<T, dim> & Point<T, dim>::operator=(const Point<T, dim> & rhs)
     {
-        if(dim != rhs.dim)
+        a.clear();
+      
+        for(int i = 0; i < dim; i++) // Assigns values to vector
         {
-            delete [] a;
-            a = new double[rhs.dim];
-        }
-        
-        dim = rhs.dim;
-        
-        for(int i = 0; i < dim; i++)
-        {
-            a[i] = rhs.a[i];
+            a.push_back(rhs.a[i]);
         }
         
         return *this;
     }
     
-    Point::Point(int dimension, double * something)
+    template<typename T, int dim>
+    Point<T, dim>::~Point<T, dim>()
     {
-       // Is this for our "universe" of points?
-    }
-    
-    //Destructor
-    
-    Point::~Point()
-    {
-        if(a!= nullptr)
-        {
-            delete[] a; // Deletes the array
-        }
         
     }
     
-    // Accessor/Mutator methods
-    // Change/get the values of private member variables
+    // Mutator Method
     
-    void Point::setValue(int dimension, double newValue) // dimension is the actual dimension (i.e. x, y, z) that we are changing
+    template<typename T, int dim>
+    void Point<T, dim>::setValue(int dimension, T newValue)
     {
+        // dimension is the actual dimension (i.e. x, y, z) that we are changing
+        
         if (dimension >= 1 && dimension <= dim)
         {
-            a[dimension-1] = newValue;
+            a.push_back(newValue);
         }
         
     }
     
-    double Point::getValue(int dim) const
+    // Accessor Methods
+    
+    template<typename T, int dim>
+    double Point<T, dim>::getValue(int d) const
     {
-        cout << a[dim-1] << endl;
-        return a[dim-1];
+        cout << a[d-1] << endl;
+        
+        return a[d-1];
     }
     
-    int Point::getDims() const
+    template<typename T, int dim>
+    int Point<T, dim>::getDims() const
     {
         return dim;
     }
     
     // Overloaded Stream Operators
     
-    std::ostream &operator<<(std::ostream & out, const Point & p)
+    template<typename T, int dim>
+    std::ostream &operator<<(std::ostream & out, const Point<T, dim> & p)
     {
         cout << fixed << showpoint << setprecision(1);
-       
-        int i = 0;
-        for( ; i < (p.dim-1); i++)
+        
+        // Vector Iterator
+        if(p.a.empty() != true)
         {
-            out << p.a[i] << ", ";
+            auto it = p.a.begin();
+        
+            for( ; it!= p.a.end()-1; ++it)
+            {
+                cout << *it << ", ";
+            }
+        
+            cout << *it << " ";
         }
         
-        out << p.a[i] << " ";
-    
         return out;
+        
     }
     
-    std::istream &operator>>(std::istream & in, Point & p)
+    template<typename T, int dim>
+    std::istream &operator>>(std::istream & in, Point<T, dim> & p)
     {
         // adding in comma separated values of doubles, each line is a point, the number of values in each line are the number of dimensions in our point
         
-                string value; // Take in each point in our line as a string
+        string value; // Take in each point in our line as a string
         
-                double pt; // Holds the point values after we convert them from string to double
-                
-                int i = 1; // counter to hold the number of dimensions (starts at 1 since dimensions will be number of commas + 1)
+        T pt; // Holds the point values after we convert them from string to double
         
-                while(getline(in, value, Point::POINT_VALUE_DELIM)) // omit commas when reading lines, store points into "value"
-                {
-                    pt = stod(value); // convert the strings to doubles
-                   // cout << "Value: " << pt << endl;
-                    p.setValue(i++, pt);
-                }
+        int i = 1; // counter to hold the number of dimensions (starts at 1 since dimensions will be number of commas + 1)
+        
+        while(getline(in, value, Point<T, dim>::POINT_VALUE_DELIM)) // omit commas when reading lines, store points into "value"
+        {
+            pt = stod(value); // convert the strings to doubles
+            
+            if(i > dim)
+            {
+                p.rewindIdGen();
+                throw DimensionalityMismatchEx(i, dim);
+            }
+         
+             p.setValue(i++, pt);
+        }
+        
+        i--;
+        
+        if(i < dim)
+        {
+            p.rewindIdGen();
+            throw DimensionalityMismatchEx(i, dim);
+        }
         
         return in;
-        
     }
     
     // Overloaded [] Operator
-    
-    double & Point::operator[](int index)
+    template<typename T, int dim>
+    T & Point<T, dim>::operator[](int index)
     {
-        return a[index-1];
+        if(index >= dim)
+        {
+            throw OutOfBoundsEx(index);
+        }
+       
+        return a[index];
     }
     
     // distanceTo Function to approximate the distance between two points
-    
-    double Point::distanceTo(const Point & other) const
+    template<typename T, int dim>
+    T Point<T, dim>::distanceTo(const Point<T, dim> & other) const
     {
-        if (other.dim == dim)
-        {
             double sum = 0;
             
             for (int i = 0; i < dim; i++)
@@ -162,22 +181,18 @@ namespace Clustering
             
             cout << fixed << showpoint << setprecision(2);
             return sqrt(sum);
-        }
         
         return 0; // If the if statement is not satisfied
     }
     
     // Comparison Operators
     
-    bool operator==(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    bool operator==(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same to compare." << endl;
-            return 0;
-        }
+        cout << "ID Comparison: " << lhs._idPt << " " << rhs._idPt << endl;
         
-        for (int i = 0; i < lhs.dim; i++)
+        for (int i = 0; i < dim; i++)
         {
             if(lhs.a[i] != rhs.a[i])
             {
@@ -188,17 +203,12 @@ namespace Clustering
         return true;
     }
     
-    bool operator!=(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    bool operator!=(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
+        for(int i = 0; i < dim; i++)
         {
-            cout << "The dimensions must be the same to compare." << endl;
-            return 0;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
-        {
-            if(lhs.a[i] != rhs.a[i])
+            if(lhs._idPt != rhs._idPt || lhs.a[i] != rhs.a[i])
             {
                 return true;
             }
@@ -207,15 +217,10 @@ namespace Clustering
         return false;
     }
     
-    bool operator>=(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    bool operator>=(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same to compare." << endl;
-            return 0;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
             if(lhs.a[i] >= rhs.a[i])
             {
@@ -231,15 +236,10 @@ namespace Clustering
         return false;
     }
     
-    bool operator<=(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    bool operator<=(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same to compare." << endl;
-            return 0;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
             if(lhs.a[i] <= rhs.a[i])
             {
@@ -255,15 +255,10 @@ namespace Clustering
         return false;
     }
     
-    bool operator>(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    bool operator>(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same to compare." << endl;
-            return 0;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
             if(lhs.a[i] > rhs.a[i])
             {
@@ -279,15 +274,10 @@ namespace Clustering
         return false;
     }
     
-    bool operator<(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    bool operator<(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same to compare." << endl;
-            return 0;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
             
             if(lhs.a[i] < rhs.a[i])
@@ -306,19 +296,21 @@ namespace Clustering
     
     // Arithmetic Operators
     
-    Point & Point::operator*=(double val)
+    template<typename T, int dim>
+    Point<T, dim> & Point<T, dim>::operator*=(T val)
     {
         for(int i = 0; i < dim; i++)
         {
             (a[i] *= val);
         }
-
+        
         cout << fixed << showpoint << setprecision(2) << endl;
         
         return *this;
     }
     
-    Point & Point::operator/=(double val)
+    template<typename T, int dim>
+    Point<T, dim> & Point<T, dim>::operator/=(T val)
     {
         if(val > 0)
         {
@@ -326,7 +318,7 @@ namespace Clustering
             {
                 a[i] /= val;
             }
-        
+            
             cout << fixed << showpoint << setprecision(2) << endl;
             return *this;
         }
@@ -338,15 +330,10 @@ namespace Clustering
         }
     }
     
-    Point & operator+=(Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    Point<T, dim> & operator+=(Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same." << endl;
-            return lhs;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
             lhs.a[i] += rhs.a[i];
         }
@@ -355,15 +342,10 @@ namespace Clustering
         return lhs;
     }
     
-    Point & operator-=(Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    Point<T, dim> & operator-=(Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same." << endl;
-            return lhs;
-        }
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
             lhs.a[i] -= rhs.a[i];
         }
@@ -372,62 +354,54 @@ namespace Clustering
         return lhs;
     }
     
-     const Point Point::operator*(double val) const
+    template<typename T, int dim>
+    const Point<T, dim> Point<T, dim>::operator*(T val) const
     {
-        Point b(dim);
+        Point<T, dim> b;
         
         for(int i = 0; i < dim; i++)
         {
-            b.a[i] = a[i];
+            b.a.push_back(a[i]);
         }
         
         return (b *= val);
     }
     
-    const Point Point::operator/(double val) const
+    template<typename T, int dim>
+    const Point<T, dim> Point<T, dim>::operator/(T val) const
     {
-        Point b(dim);
+        Point<T, dim> b;
         
         for(int i = 0; i < dim; i++)
         {
-            b.a[i] = a[i];
+            b.a.push_back(a[i]);
         }
         
         return b /= val;
     }
-
-    const Point operator+(const Point & lhs, const Point & rhs)
+    
+    template<typename T, int dim>
+    const Point<T, dim> operator+(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same." << endl;
-            return 0;
-        }
+        Point<T, dim> b;
         
-        Point b(lhs.dim);
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
-            b.a[i] = (lhs.a[i] + rhs.a[i]);
+            b.a.push_back(lhs.a[i] + rhs.a[i]);
         }
         
         cout << fixed << showpoint << setprecision(2);
         return b;
     }
     
-    const Point operator-(const Point & lhs, const Point & rhs)
+    template<typename T, int dim>
+    const Point<T, dim> operator-(const Point<T, dim> & lhs, const Point<T, dim> & rhs)
     {
-        if(lhs.dim != rhs.dim)
-        {
-            cout << "The dimensions must be the same." << endl;
-            return 0;
-        }
+        Point<T, dim> b;
         
-        Point b(lhs.dim);
-        
-        for(int i = 0; i < lhs.dim; i++)
+        for(int i = 0; i < dim; i++)
         {
-            b.a[i] = (lhs.a[i] - rhs.a[i]);
+            b.a.push_back(lhs.a[i] - rhs.a[i]);
         }
         
         return b;

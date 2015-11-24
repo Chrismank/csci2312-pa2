@@ -1,88 +1,105 @@
 //
 //  Point.hpp
-//  PA3
+//  Programming Assignment 4 Final
 //
-//  Created by Kathryn Chrisman on 9/17/15.
+//  Created by Kathryn Chrisman on 10/31/15.
 //  Copyright © 2015 Kathryn. All rights reserved.
-// PA3
+//
 
 #ifndef Point_hpp
 #define Point_hpp
 
 #include <stdio.h>
 #include <iostream>
+#include <vector>
+
+using namespace std;
 
 namespace Clustering
 {
-    
+    template <typename T, int dim>
     class Point
     {
     private:
-        double *a; // values of the point's dimensions
-        int dim; // number of dimensions
-        static const char POINT_VALUE_DELIM;
+        vector<T> a; // Values of the point's dimensions
+        static const char POINT_VALUE_DELIM; // Delimiter in file you're reading in
+        unsigned int _idPt; // id to keep track of our points
+        static unsigned int _idGeneratorPt;
         
     public:
         // Constructors
-        Point(int d); // Dynamically allocated array and int dim
-        Point(int, double*); // OPTIONAL
+        Point(); // Constructor takes a dimension as a parameter
+        Point(const Point<T, dim> &); // Overloaded copy constructor
+        Point &operator=(const Point<T, dim> &); // Overloaded assignment operator
         
-        Point(const Point &); // Overloaded copy constructor
-        Point &operator=(const Point &); //Overloaded assignment operator
+        // Rewind ID
+        static void rewindIdGen(){_idGeneratorPt--;}
         
         // Destructor
-        ~Point(); // Destructor (needs to be overloaded)
+        ~Point(); 
         
         // Mutator methods
-        void setValue(int, double);
-       
+        void setValue(int, T);
+        
         // Accessor methods
-        double getValue(int) const;
+        double getValue(int d) const;
         int getDims() const;
+        unsigned int get_ID() {return _idPt;}
         
         // distanceTo function to approximate the distance between two points
-        double distanceTo(const Point &other) const;
+        T distanceTo(const Point &other) const;
         
         // Functions for overloaded comparison operators
-        friend bool operator==(const Point &, const Point &);
+        template<typename S, int d>
+        friend bool operator==(const Point<S, d> &, const Point<S, d> &);
         
-        friend bool operator!=(const Point &, const Point &);
+        template<typename S, int d>
+        friend bool operator!=(const Point<S, d> &, const Point<S, d> &);
         
-        friend bool operator<(const Point &, const Point &);
+        template<typename S, int d>
+        friend bool operator<(const Point<S, d> &, const Point<S, d> &);
         
-        friend bool operator>(const Point &, const Point &);
+        template<typename S, int d>
+        friend bool operator>(const Point<S, d> &, const Point<S, d> &);
         
-        friend bool operator<=(const Point &, const Point &);
+        template<typename S, int d>
+        friend bool operator<=(const Point<S, d> &, const Point<S, d> &);
         
-        friend bool operator>=(const Point &, const Point &);
+        template<typename S, int d>
+        friend bool operator>=(const Point<S, d> &, const Point<S, d> &);
         
         // Functions for overloaded arithmetic operators
-        Point &operator*=(double);
+        Point &operator*=(T);
         
-        const Point operator*(double) const;
+        const Point operator*(T) const;
         
-        Point &operator/=(double);
+        Point &operator/=(T);
         
-        const Point operator/(double) const;
+        const Point operator/(T) const;
         
-        friend Point &operator+=(Point &, const Point &);
+        template<typename S, int d>
+        friend Point<S, d> &operator+=(Point<S, d> &, const Point<S, d> &);
         
-        friend const Point operator+(const Point &, const Point &);
+        template<typename S, int d>
+        friend const Point<S, d> operator+(const Point<S, d> &, const Point<S, d> &);
         
-        friend Point &operator-=(Point &, const Point &);
+        template<typename S, int d>
+        friend Point<S, d> &operator-=(Point<S, d> &, const Point<S, d> &);
         
-        friend const Point operator-(const Point &, const Point &);
-        
-        // Overloaded cout/cin stream operator
-        
-        friend std::ostream &operator<<(std::ostream &, const Point &);
-        
-        friend std::istream &operator>>(std::istream &, Point &);
+        template<typename S, int d>
+        friend const Point<S, d> operator-(const Point<S, d> &, const Point<S, d> &);
         
         // Overloaded [] operator
+        T &operator[](int index);
         
-        double &operator[](int index);
+        // Overloaded cout/cin stream operator
+        template<typename S, int d>
+        friend std::ostream &operator<<(std::ostream &, const Point<S, d> &);
+        
+        template<typename S, int d>
+        friend std::istream &operator>>(std::istream &, Point<S, d> &);
     };
 }
 
+#include "Point.cpp"
 #endif /* Point_hpp */
